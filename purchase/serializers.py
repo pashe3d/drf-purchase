@@ -87,10 +87,15 @@ class OrderSerializer(CommonFieldsSerializer, NestedModelSerializer):
         required=False,
         allow_null=True,
     )
+    duration = IntegerField(
+        required=False,
+        min_value=0,
+        max_value=999999999,
+    )
 
     def create(self, validated_data: dict) -> Any:
-        a = super().create(validated_data)
-        items = Item.objects.filter(order_id=a.pk)
+        order = super().create(validated_data)
+        items = Item.objects.filter(order_id=order.pk)
         for item in items:
             price = Price.objects.filter(product_id=item.product.pk).last()
             if price is None:
@@ -98,7 +103,7 @@ class OrderSerializer(CommonFieldsSerializer, NestedModelSerializer):
             item.price = price
             item.save()
 
-        return a
+        return order
 
     class Meta:
         model = Order
@@ -108,6 +113,7 @@ class OrderSerializer(CommonFieldsSerializer, NestedModelSerializer):
             'user_id',
             'products',
             'products_ids',
+            'duration',
         ]
 
 
